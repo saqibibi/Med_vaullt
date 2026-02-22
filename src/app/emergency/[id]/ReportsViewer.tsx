@@ -99,16 +99,27 @@ export default function ReportsViewer({ reports }: { reports: any[] }) {
                                 />
                             </div>
                         ) : (
-                            <div className="w-full h-full bg-white rounded-md overflow-hidden relative">
-                                {/* Invisible overlay over the top toolbar area of some default PDF viewers */}
-                                <div className="absolute top-0 left-0 w-full h-14 bg-transparent z-10 pointer-events-none" onContextMenu={(e) => e.preventDefault()}></div>
-                                <object
-                                    data={`${selectedReport.public_url}#toolbar=0&navpanes=0&scrollbar=0`}
-                                    type="application/pdf"
-                                    className="w-full h-full border-none"
+                            <div className="w-full h-[60vh] bg-white rounded-xl overflow-hidden flex flex-col items-center justify-center p-6 text-center shadow-inner relative max-w-sm">
+                                <FileText className="w-16 h-16 text-indigo-200 mb-4" />
+                                <h4 className="font-bold text-slate-800 text-lg mb-2">PDF Document</h4>
+                                <p className="text-sm text-slate-500 mb-6 font-medium">For compatibility, PDF reports open securely in a new browser tab.</p>
+
+                                <a
+                                    href={`${selectedReport.public_url}#toolbar=0`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg shadow-indigo-500/30 transition-transform active:scale-95 flex items-center justify-center gap-2 w-full"
                                 >
-                                    <p className="text-center p-4">Your browser does not support PDFs. <a href={selectedReport.public_url} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline text-sm block mt-2">Click here to view it directly</a></p>
-                                </object>
+                                    <Eye className="w-5 h-5" />
+                                    Open PDF Report
+                                </a>
+
+                                <button
+                                    onClick={closeReport}
+                                    className="mt-4 text-slate-400 hover:text-slate-600 font-medium text-sm py-2 px-4 transition-colors"
+                                >
+                                    Cancel
+                                </button>
                             </div>
                         )}
                     </div>
