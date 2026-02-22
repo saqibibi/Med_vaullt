@@ -17,7 +17,12 @@ export default async function EmergencyProfilePage({ params }: { params: { id: s
         .eq('emergency_id', id)
         .single()
 
-    if (profileError || !profile) {
+    if (profileError) {
+        console.error("Emergency Profile Fetch Error:", profileError)
+    }
+
+    if (!profile) {
+        console.error("PROFILE NOT FOUND FOR ID:", id)
         notFound()
     }
 

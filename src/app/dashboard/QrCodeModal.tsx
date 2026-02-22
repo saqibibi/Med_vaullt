@@ -18,10 +18,15 @@ export default function QrCodeModal({ emergencyId, profileName }: QrModalProps) 
     const qrRef = useRef<HTMLDivElement>(null)
     const router = useRouter()
 
-    // Ensure we capture the full domain (e.g., https://your-app.vercel.app/emergency/123)
-    const qrUrl = typeof window !== 'undefined'
-        ? `${window.location.origin}/emergency/${emergencyId}`
-        : `https://medvault.vercel.app/emergency/${emergencyId}` // Fallback domain pattern
+    // Ensure we capture the full domain dynamically without hydration errors
+    const [qrUrl, setQrUrl] = useState<string>('')
+
+    import('react').then(react => {
+        react.useEffect(() => {
+            const origin = window.location.origin || process.env.NEXT_PUBLIC_SITE_URL || 'https://med-vaullt.vercel.app'
+            setQrUrl(`${origin}/emergency/${emergencyId}`)
+        }, [emergencyId])
+    })
 
     const handleDownload = async () => {
         if (!qrRef.current) return
