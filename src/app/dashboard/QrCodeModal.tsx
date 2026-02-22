@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { QrCode, X, Download, ShieldAlert, RefreshCw, Loader2 } from 'lucide-react'
 import QRCode from 'react-qr-code'
 import html2canvas from 'html2canvas'
@@ -19,14 +19,14 @@ export default function QrCodeModal({ emergencyId, profileName }: QrModalProps) 
     const router = useRouter()
 
     // Ensure we capture the full domain dynamically without hydration errors
-    const [qrUrl, setQrUrl] = useState<string>('')
+    const [qrUrl, setQrUrl] = useState<string>(`https://med-vaullt.vercel.app/emergency/${emergencyId}`)
 
-    import('react').then(react => {
-        react.useEffect(() => {
-            const origin = window.location.origin || process.env.NEXT_PUBLIC_SITE_URL || 'https://med-vaullt.vercel.app'
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const origin = window.location.origin || 'https://med-vaullt.vercel.app'
             setQrUrl(`${origin}/emergency/${emergencyId}`)
-        }, [emergencyId])
-    })
+        }
+    }, [emergencyId])
 
     const handleDownload = async () => {
         if (!qrRef.current) return
