@@ -4,17 +4,33 @@ import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { 
     User, Phone, Droplet, Users, Plus, Trash2, Camera, 
-    AlertCircle, Loader2, Edit, Calendar, CheckCircle2, Shield, Lock, ChevronRight 
+    AlertCircle, Loader2, Edit, Calendar, CheckCircle2, Lock, ChevronRight 
 } from 'lucide-react'
+import Image from 'next/image'
+
+interface Contact {
+    name: string
+    phone: string
+    relation: string
+}
+
+interface Profile {
+    full_name?: string
+    phone_number?: string
+    blood_group?: string
+    dob?: string
+    avatar_url?: string
+    emergency_contacts?: Contact[]
+}
 
 interface ProfileFormProps {
-    profile: any
+    profile: Profile | null
     displayFirstName: string
     email: string
     memberSince?: string
 }
 
-export default function ProfileForm({ profile, displayFirstName, email, memberSince }: ProfileFormProps) {
+export default function ProfileForm({ profile, displayFirstName, email }: ProfileFormProps) {
     const router = useRouter()
     const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -23,30 +39,13 @@ export default function ProfileForm({ profile, displayFirstName, email, memberSi
         ? profile.emergency_contacts
         : []
 
-    const [contacts, setContacts] = useState<any[]>(initialContacts)
+    const [contacts, setContacts] = useState<Contact[]>(initialContacts)
     const [avatarPreview, setAvatarPreview] = useState<string | null>(profile?.avatar_url || null)
     const [error, setError] = useState<string | null>(null)
     const [isSaving, setIsSaving] = useState(false)
     const [isEditing, setIsEditing] = useState(false) // Toggle form edit state
 
-    // Format member date (e.g. "July 2026")
-    const memberSinceFormatted = memberSince 
-        ? new Date(memberSince).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-        : 'July 2026'
 
-    // Calculate profile completion score out of 100
-    const calculateCompletion = () => {
-        let score = 0
-        if (profile?.full_name?.trim()) score += 20
-        if (profile?.phone_number?.trim()) score += 20
-        if (profile?.blood_group) score += 20
-        if (profile?.dob) score += 20
-        if (profile?.avatar_url || avatarPreview) score += 10
-        if (contacts.length > 0 && contacts[0].name?.trim()) score += 10
-        return score
-    }
-
-    const completion = calculateCompletion()
 
     const handleAddContact = () => {
         setContacts([...contacts, { name: '', phone: '', relation: '' }])
@@ -95,9 +94,10 @@ export default function ProfileForm({ profile, displayFirstName, email, memberSi
                 setIsSaving(false)
                 router.refresh() // force server refetch
             }
-        } catch (err: any) {
-            console.error("Fetch error:", err)
-            setError(err.message || 'An unexpected network error occurred.')
+        } catch (err: unknown) {
+            const fetchErr = err instanceof Error ? err : new Error(String(err))
+            console.error("Fetch error:", fetchErr)
+            setError(fetchErr.message || 'An unexpected network error occurred.')
             setIsSaving(false)
         }
     }
@@ -156,7 +156,7 @@ export default function ProfileForm({ profile, displayFirstName, email, memberSi
                     >
                         <div className="w-20 h-20 rounded-full bg-slate-50 border border-slate-200 shadow-inner flex items-center justify-center overflow-hidden relative">
                             {avatarPreview ? (
-                                <img src={avatarPreview} alt="Profile" className="w-full h-full object-cover" />
+                                <Image src={avatarPreview} alt="Profile" fill className="object-cover rounded-full" unoptimized />
                             ) : (
                                 <User className="w-8 h-8 text-slate-400" />
                             )}

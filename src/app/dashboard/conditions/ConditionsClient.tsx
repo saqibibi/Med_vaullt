@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, X, AlertTriangle, Save, Trash2, HeartPulse, Loader2 } from 'lucide-react'
+import { Plus, X, AlertTriangle, Trash2, HeartPulse, Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 interface Condition {
@@ -13,7 +13,13 @@ interface Condition {
 
 interface ConditionsClientProps {
     initialConditions: Condition[]
-    profileData: any
+    profileData: {
+        full_name?: string
+        phone_number?: string
+        blood_group?: string
+        dob?: string
+        emergency_contacts?: unknown[]
+    }
 }
 
 export default function ConditionsClient({ initialConditions, profileData }: ConditionsClientProps) {
@@ -64,9 +70,10 @@ export default function ConditionsClient({ initialConditions, profileData }: Con
             router.refresh()
             setTimeout(() => setSuccess(false), 3000)
 
-        } catch (err: any) {
-            console.error(err)
-            setError(err.message)
+        } catch (err: unknown) {
+            const error = err instanceof Error ? err : new Error(String(err))
+            console.error(error)
+            setError(error.message)
         } finally {
             setIsSaving(false)
         }
@@ -196,7 +203,7 @@ export default function ConditionsClient({ initialConditions, profileData }: Con
                         <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">Severity</label>
                         <select
                             value={newSeverity}
-                            onChange={(e) => setNewSeverity(e.target.value as any)}
+                            onChange={(e) => setNewSeverity(e.target.value as 'Low' | 'Medium' | 'High' | 'Critical')}
                             className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3 py-4 text-sm text-slate-900 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/50 focus:bg-white transition-all font-semibold appearance-none cursor-pointer"
                         >
                             <option value="Low">Low (Monitor)</option>

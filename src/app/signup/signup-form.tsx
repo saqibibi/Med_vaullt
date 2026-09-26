@@ -14,10 +14,29 @@ interface SignupFormProps {
 export function SignupForm({ serverMessage }: SignupFormProps) {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
-    const [errors, setErrors] = useState<{ email?: string; password?: string; form?: string }>({})
-    const [infoMessage, setInfoMessage] = useState<string | null>(null)
-    const [touched, setTouched] = useState<{ email?: boolean; password?: boolean }>({})
-    const [isPending, startTransition] = useTransition()
+    const [errors, setErrors] = useState<{ email?: string; password?: string; form?: string }>(() => {
+        if (!serverMessage) return {}
+        const lower = serverMessage.toLowerCase()
+        const isInfo = lower.includes('verify') || lower.includes('check your email')
+        if (isInfo) return {}
+        if (lower.includes('user already registered') || lower.includes('already exists') || lower.includes('already registered')) {
+            return { form: 'An account with this email already exists.' }
+        }
+        if (lower.includes('weak password') || lower.includes('should be at least')) {
+            return { form: 'Password is too weak. Must be at least 6 characters.' }
+        }
+        if (lower.includes('network') || lower.includes('connect') || lower.includes('fetch') || lower.includes('timeout')) {
+            return { form: 'Unable to connect. Try again.' }
+        }
+        return { form: serverMessage }
+    })
+    const [infoMessage, setInfoMessage] = useState<string | null>(() => {
+        if (!serverMessage) return null
+        const lower = serverMessage.toLowerCase()
+        const isInfo = lower.includes('verify') || lower.includes('check your email')
+        return isInfo ? serverMessage : null
+    })
+    const [, startTransition] = useTransition()
 
     // Map raw backend errors to friendly messages
     const mapErrorMessage = (msg: string | null | undefined): string | null => {
@@ -35,26 +54,13 @@ export function SignupForm({ serverMessage }: SignupFormProps) {
         return msg // Keep standard messages unless mapped
     }
 
-    // Effect to handle server messages passed through URL query parameters
+    // Clean up the URL query parameter to avoid showing the alert on reload
     useEffect(() => {
-        if (serverMessage) {
-            const isInfo = serverMessage.toLowerCase().includes('verify') || serverMessage.toLowerCase().includes('check your email')
-            if (isInfo) {
-                setInfoMessage(serverMessage)
-            } else {
-                const friendlyMessage = mapErrorMessage(serverMessage)
-                if (friendlyMessage) {
-                    setErrors(prev => ({ ...prev, form: friendlyMessage }))
-                }
-            }
-
-            // Clean up the URL query parameter to avoid showing the alert on reload
-            if (typeof window !== 'undefined') {
-                const url = new URL(window.location.href)
-                if (url.searchParams.has('message')) {
-                    url.searchParams.delete('message')
-                    window.history.replaceState({}, '', url.pathname + url.search)
-                }
+        if (serverMessage && typeof window !== 'undefined') {
+            const url = new URL(window.location.href)
+            if (url.searchParams.has('message')) {
+                url.searchParams.delete('message')
+                window.history.replaceState({}, '', url.pathname + url.search)
             }
         }
     }, [serverMessage])
@@ -106,7 +112,6 @@ export function SignupForm({ serverMessage }: SignupFormProps) {
     }
 
     const handleEmailBlur = () => {
-        setTouched(prev => ({ ...prev, email: true }))
         let err = ''
         if (!email.trim()) {
             err = 'Please enter your email.'
@@ -117,7 +122,6 @@ export function SignupForm({ serverMessage }: SignupFormProps) {
     }
 
     const handlePasswordBlur = () => {
-        setTouched(prev => ({ ...prev, password: true }))
         let err = ''
         if (!password) {
             err = 'Please create a password.'
@@ -130,8 +134,6 @@ export function SignupForm({ serverMessage }: SignupFormProps) {
     const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         
-        setTouched({ email: true, password: true })
-
         // Perform validation
         const emailErr = !email.trim() 
             ? 'Please enter your email.' 
@@ -169,8 +171,9 @@ export function SignupForm({ serverMessage }: SignupFormProps) {
                         window.location.href = res.redirectUrl
                     }
                 }
-            } catch (err: any) {
-                console.error('Signup action error:', err)
+            } catch (err: unknown) {
+                const error = err instanceof Error ? err : new Error(String(err))
+                console.error('Signup action error:', error)
                 setErrors(prev => ({ ...prev, form: 'Unable to connect. Try again.' }))
             }
         })

@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
-import { UploadCloud, File as FileIcon, X, CheckCircle2, Loader2, Image as ImageIcon, Camera, ImagePlus, FileText, Calendar, FileType2 } from 'lucide-react'
+import { UploadCloud, File as FileIcon, X, CheckCircle2, Loader2, Image as ImageIcon, Camera, ImagePlus, FileText, Calendar } from 'lucide-react'
 
 export default function UploadClient() {
     const [file, setFile] = useState<File | null>(null)
@@ -17,7 +17,7 @@ export default function UploadClient() {
     const cameraInputRef = useRef<HTMLInputElement>(null)
     const imageInputRef = useRef<HTMLInputElement>(null)
     const pdfInputRef = useRef<HTMLInputElement>(null)
-    const docInputRef = useRef<HTMLInputElement>(null)
+
 
     const router = useRouter()
     const supabase = createClient()
@@ -67,7 +67,7 @@ export default function UploadClient() {
             const storagePath = `${user.id}/${fileName}`
 
             // 1. Upload to Supabase Storage
-            const { data: uploadData, error: uploadError } = await supabase.storage
+            const { error: uploadError } = await supabase.storage
                 .from('vault_assets')
                 .upload(storagePath, file)
 
@@ -102,9 +102,10 @@ export default function UploadClient() {
                 router.refresh()
             }, 2000)
 
-        } catch (err: any) {
-            console.error(err)
-            setError(err.message || "Failed to upload file")
+        } catch (err: unknown) {
+            const error = err instanceof Error ? err : new Error(String(err))
+            console.error(error)
+            setError(error.message || "Failed to upload file")
         } finally {
             setIsUploading(false)
         }

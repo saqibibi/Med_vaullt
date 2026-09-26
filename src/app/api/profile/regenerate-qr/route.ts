@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 
-export async function POST(request: Request) {
+export async function POST() {
     try {
         const supabase = await createClient()
 
@@ -37,8 +37,9 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ success: true, emergency_id: updatedProfile.emergency_id })
 
-    } catch (e: any) {
-        console.error("API Route Exception:", e)
-        return NextResponse.json({ error: e.message || "An unexpected error occurred" }, { status: 500 })
+    } catch (e: unknown) {
+        const err = e instanceof Error ? e : new Error(String(e))
+        console.error("API Route Exception:", err)
+        return NextResponse.json({ error: err.message || "An unexpected error occurred" }, { status: 500 })
     }
 }

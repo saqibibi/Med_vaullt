@@ -15,7 +15,7 @@ export async function updateProfile(formData: FormData): Promise<{ error: string
     }
 
     // 2. Extract Data
-    const updateData: any = {
+    const updateData: Record<string, string | unknown[] | null> = {
         full_name: formData.get('full_name') as string,
         phone_number: formData.get('phone_number') as string,
         blood_group: formData.get('blood_group') as string,

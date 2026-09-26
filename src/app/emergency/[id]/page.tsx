@@ -1,7 +1,8 @@
 import { createClient } from '@/utils/supabase/server'
 import { notFound } from 'next/navigation'
-import { Phone, FileText, User as UserIcon, AlertCircle, HeartPulse, ShieldCheck, Activity } from 'lucide-react'
+import { Phone, FileText, User as UserIcon, HeartPulse, ShieldCheck } from 'lucide-react'
 import ReportsViewer from './ReportsViewer'
+import Image from 'next/image'
 
 export const dynamic = 'force-dynamic'
 
@@ -33,9 +34,10 @@ export default async function EmergencyProfilePage({ params }: { params: { id: s
         .eq('user_id', profile.user_id)
         .order('created_at', { ascending: false })
 
+    const now = new Date()
     const calculateAge = (dob: string) => {
         if (!dob) return null
-        const diff = Date.now() - new Date(dob).getTime()
+        const diff = now.getTime() - new Date(dob).getTime()
         return Math.abs(new Date(diff).getUTCFullYear() - 1970)
     }
 
@@ -78,7 +80,7 @@ export default async function EmergencyProfilePage({ params }: { params: { id: s
                             <div className="absolute inset-[-6px] rounded-full border border-dashed border-emerald-500/20 animate-[spin_40s_linear_infinite]" />
                             <div className="w-18 h-18 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
                                 {profile.avatar_url ? (
-                                    <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                                    <Image src={profile.avatar_url} alt="Profile" fill className="object-cover" unoptimized />
                                 ) : (
                                     <UserIcon className="w-7 h-7 text-emerald-600" />
                                 )}
@@ -126,7 +128,7 @@ export default async function EmergencyProfilePage({ params }: { params: { id: s
                     <div className="p-6">
                         {conditions.length > 0 ? (
                             <ul className="space-y-4">
-                                {conditions.map((condition: any, idx: number) => (
+                                {conditions.map((condition: { name?: string; condition?: string; severity?: string; actionPlan?: string }, idx: number) => (
                                     <li key={idx} className="flex items-start gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 relative overflow-hidden">
                                         <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${condition.severity === 'Critical' ? 'bg-red-500' : condition.severity === 'High' ? 'bg-orange-500' : 'bg-amber-500'}`} />
                                         
@@ -172,7 +174,7 @@ export default async function EmergencyProfilePage({ params }: { params: { id: s
                     <div className="p-6">
                         {contacts.length > 0 ? (
                             <div className="space-y-4">
-                                {contacts.map((contact: any, idx: number) => (
+                                {contacts.map((contact: { name: string; phone: string; relation: string }, idx: number) => (
                                     <div key={idx} className="flex items-center justify-between border-b border-slate-50 last:border-0 pb-4 last:pb-0">
                                         <div className="min-w-0 mr-4">
                                             <p className="font-bold text-slate-800 truncate">{contact.name}</p>

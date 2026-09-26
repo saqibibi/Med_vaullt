@@ -16,7 +16,7 @@ export async function POST(request: Request) {
         const formData = await request.formData()
 
         // 2. Extract Data
-        const updateData: any = {
+        const updateData: Record<string, string | null | unknown[]> = {
             full_name: formData.get('full_name') as string,
             phone_number: formData.get('phone_number') as string,
             blood_group: formData.get('blood_group') as string,
@@ -74,8 +74,9 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ success: true, profile: updatedProfile[0] })
 
-    } catch (e: any) {
-        console.error("API Route Exception:", e)
-        return NextResponse.json({ error: e.message || "An unexpected error occurred" }, { status: 500 })
+    } catch (e: unknown) {
+        const err = e instanceof Error ? e : new Error(String(e))
+        console.error("API Route Exception:", err)
+        return NextResponse.json({ error: err.message || "An unexpected error occurred" }, { status: 500 })
     }
 }

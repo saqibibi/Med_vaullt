@@ -176,7 +176,7 @@ export default function QrCodeModal({ emergencyId, profileName }: QrModalProps) 
                         ) : (
                             <div className="flex flex-col items-center text-center gap-4">
                                 <div className="bg-orange-50 text-orange-700 p-4 rounded-xl text-xs font-semibold border border-orange-100 leading-relaxed">
-                                    You don't have an Emergency ID yet. Click the button below to instantly securely generate your first Scannable Medical ID.
+                                    You don&apos;t have an Emergency ID yet. Click the button below to instantly securely generate your first Scannable Medical ID.
                                 </div>
                                 <button
                                     onClick={handleRegenerate}

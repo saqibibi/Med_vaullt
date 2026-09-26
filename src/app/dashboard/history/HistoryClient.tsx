@@ -5,6 +5,7 @@ import { FileText, Calendar, Image as ImageIcon, File as FileIcon, X, Download, 
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 
 interface DocumentItem {
     id: string
@@ -83,9 +84,10 @@ export default function HistoryClient({ documents }: HistoryClientProps) {
             setDocs(prev => prev.filter(d => d.id !== doc.id))
             router.refresh()
 
-        } catch (err: any) {
-            console.error("Failed to delete document", err)
-            alert("Failed to delete the report. " + (err.message || ""))
+        } catch (err: unknown) {
+            const error = err instanceof Error ? err : new Error(String(err))
+            console.error("Failed to delete document", error)
+            alert("Failed to delete the report. " + (error.message || ""))
         } finally {
             setIsDeleting(null)
         }
@@ -101,7 +103,7 @@ export default function HistoryClient({ documents }: HistoryClientProps) {
                             <FileIcon className="w-8 h-8 text-slate-400" />
                         </div>
                         <h3 className="text-slate-800 font-bold text-lg mb-2">No Reports Yet</h3>
-                        <p className="text-slate-400 text-sm font-semibold mb-6 max-w-[240px] leading-relaxed">You haven't uploaded any medical documents to your vault.</p>
+                        <p className="text-slate-400 text-sm font-semibold mb-6 max-w-[240px] leading-relaxed">You haven&apos;t uploaded any medical documents to your vault.</p>
                         <Link href="/dashboard/upload" className="bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-sky-600 transition-colors shadow-sm shadow-primary/10">
                             Upload your first report
                         </Link>
@@ -198,10 +200,12 @@ export default function HistoryClient({ documents }: HistoryClientProps) {
                     {/* Viewer Content Area */}
                     <div className="flex-1 flex items-center justify-center p-4 overflow-hidden relative">
                         {isImage(selectedDoc.file_name) ? (
-                            <img
+                            <Image
                                 src={selectedDoc.public_url}
                                 alt={selectedDoc.title || 'Document'}
-                                className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl border border-white/5 bg-slate-950/20"
+                                fill
+                                className="object-contain rounded-2xl shadow-2xl border border-white/5 bg-slate-950/20"
+                                unoptimized
                             />
                         ) : (
                             <iframe

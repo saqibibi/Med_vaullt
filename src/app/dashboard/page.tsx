@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { ChevronRight, Folder, HeartPulse, UploadCloud, User, Droplet, Phone, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
 import QrCodeModal from './QrCodeModal'
+import Image from 'next/image'
 
 export const dynamic = 'force-dynamic'
 
@@ -75,7 +76,7 @@ export default async function DashboardPage() {
                             <div className="flex items-center gap-4">
                                 <div className="w-14 h-14 rounded-full bg-white border border-blue-100/50 flex items-center justify-center shrink-0 shadow-inner overflow-hidden">
                                     {profile?.avatar_url ? (
-                                        <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover rounded-full" />
+                                        <Image src={profile.avatar_url} alt="Profile" fill className="object-cover rounded-full" unoptimized />
                                     ) : (
                                         <User className="w-6 h-6 text-blue-600" />
                                     )}

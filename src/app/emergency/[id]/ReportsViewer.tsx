@@ -1,13 +1,35 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { FileText, Image as ImageIcon, X, Eye, Calendar } from 'lucide-react'
+import Image from 'next/image'
 
 // This component ensures reports are "view-only" by disabling right clicks, 
 // using generic iframes without toolbars for PDFs, and modal overlays.
 
-export default function ReportsViewer({ reports }: { reports: any[] }) {
-    const [selectedReport, setSelectedReport] = useState<any | null>(null)
+interface Report {
+    id: string
+    title: string
+    file_name: string
+    summary?: string | null
+    public_url: string
+    created_at: string
+}
+
+export default function ReportsViewer({ reports }: { reports: Report[] }) {
+    const [selectedReport, setSelectedReport] = useState<Report | null>(null)
+
+    // Manage body scroll lock via effect to satisfy react-hooks/immutability
+    useEffect(() => {
+        if (selectedReport) {
+            document.body.style.overflow = 'hidden'
+        } else {
+            document.body.style.overflow = 'auto'
+        }
+        return () => {
+            document.body.style.overflow = 'auto'
+        }
+    }, [selectedReport])
 
     if (!reports || reports.length === 0) {
         return (
@@ -20,15 +42,12 @@ export default function ReportsViewer({ reports }: { reports: any[] }) {
         )
     }
 
-    const openReport = (report: any) => {
+    const openReport = (report: Report) => {
         setSelectedReport(report)
-        // Prevent body scrolling when modal is open
-        document.body.style.overflow = 'hidden'
     }
 
     const closeReport = () => {
         setSelectedReport(null)
-        document.body.style.overflow = 'auto'
     }
 
     const isImage = (fileName: string) => {
@@ -93,12 +112,14 @@ export default function ReportsViewer({ reports }: { reports: any[] }) {
                             <div className="relative w-full h-full flex items-center justify-center">
                                 {/* Invisible overlay to prevent drag/drop saving */}
                                 <div className="absolute inset-0 z-10" onContextMenu={(e) => e.preventDefault()}></div>
-                                <img
+                                <Image
                                     src={selectedReport.public_url}
                                     alt={selectedReport.title}
-                                    className="max-w-full max-h-full object-contain select-none pointer-events-none rounded-2xl shadow-2xl border border-white/5"
+                                    fill
+                                    className="object-contain select-none pointer-events-none rounded-2xl shadow-2xl border border-white/5"
                                     onContextMenu={(e) => e.preventDefault()}
-                                    draggable="false"
+                                    draggable={false}
+                                    unoptimized
                                 />
                             </div>
                         ) : (

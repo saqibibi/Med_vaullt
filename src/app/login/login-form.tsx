@@ -15,9 +15,24 @@ interface LoginFormProps {
 export function LoginForm({ serverMessage }: LoginFormProps) {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
-    const [errors, setErrors] = useState<{ email?: string; password?: string; form?: string }>({})
-    const [touched, setTouched] = useState<{ email?: boolean; password?: boolean }>({})
-    const [isPending, startTransition] = useTransition()
+    const [errors, setErrors] = useState<{ email?: string; password?: string; form?: string }>(() => {
+        if (!serverMessage) return {}
+        const lower = serverMessage.toLowerCase()
+        let form: string
+        if (lower.includes('invalid') || lower.includes('credentials') || lower.includes('grant')) {
+            form = 'Invalid email or password.'
+        } else if (lower.includes('confirm') || lower.includes('verify') || lower.includes('email_not_confirmed')) {
+            form = 'Please verify your email address.'
+        } else if (lower.includes('network') || lower.includes('connect') || lower.includes('fetch') || lower.includes('timeout')) {
+            form = 'Unable to connect. Try again.'
+        } else if (lower.includes('session') || lower.includes('expired')) {
+            form = 'Session expired. Please log in again.'
+        } else {
+            form = 'Invalid email or password.'
+        }
+        return { form }
+    })
+    const [, startTransition] = useTransition()
 
     // Map raw backend errors to friendly messages
     const mapErrorMessage = (msg: string | null | undefined): string | null => {
@@ -38,21 +53,13 @@ export function LoginForm({ serverMessage }: LoginFormProps) {
         return 'Invalid email or password.'
     }
 
-    // Effect to handle server-side errors passed through query parameters
+    // Clean up the URL query parameter to avoid showing the error on page reload
     useEffect(() => {
-        if (serverMessage) {
-            const friendlyMessage = mapErrorMessage(serverMessage)
-            if (friendlyMessage) {
-                setErrors(prev => ({ ...prev, form: friendlyMessage }))
-            }
-
-            // Clean up the URL query parameter to avoid showing the error on page reload
-            if (typeof window !== 'undefined') {
-                const url = new URL(window.location.href)
-                if (url.searchParams.has('message')) {
-                    url.searchParams.delete('message')
-                    window.history.replaceState({}, '', url.pathname + url.search)
-                }
+        if (serverMessage && typeof window !== 'undefined') {
+            const url = new URL(window.location.href)
+            if (url.searchParams.has('message')) {
+                url.searchParams.delete('message')
+                window.history.replaceState({}, '', url.pathname + url.search)
             }
         }
     }, [serverMessage])
@@ -108,7 +115,6 @@ export function LoginForm({ serverMessage }: LoginFormProps) {
     }
 
     const handleEmailBlur = () => {
-        setTouched(prev => ({ ...prev, email: true }))
         let err = ''
         if (!email.trim()) {
             err = 'Please enter your email.'
@@ -119,7 +125,6 @@ export function LoginForm({ serverMessage }: LoginFormProps) {
     }
 
     const handlePasswordBlur = () => {
-        setTouched(prev => ({ ...prev, password: true }))
         let err = ''
         if (!password) {
             err = 'Please enter your password.'
@@ -132,8 +137,7 @@ export function LoginForm({ serverMessage }: LoginFormProps) {
     const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         
-        // Mark all fields as touched
-        setTouched({ email: true, password: true })
+        // Mark all fields as touched (validation already handled below)
 
         // Perform final validation check
         const emailErr = !email.trim() 
@@ -169,8 +173,9 @@ export function LoginForm({ serverMessage }: LoginFormProps) {
                 } else if (res?.success && res.redirectUrl) {
                     window.location.href = res.redirectUrl
                 }
-            } catch (err: any) {
-                console.error('Login action error:', err)
+            } catch (err: unknown) {
+                const error = err instanceof Error ? err : new Error(String(err))
+                console.error('Login action error:', error)
                 setErrors(prev => ({ ...prev, form: 'Unable to connect. Try again.' }))
             }
         })

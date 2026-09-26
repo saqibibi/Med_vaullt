@@ -1,8 +1,9 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
-import { FileText, Clock, CheckCircle2, XCircle, FileQuestion, Users } from 'lucide-react'
+import { FileText, CheckCircle2, XCircle, FileQuestion, Users } from 'lucide-react'
 import { approveDocument, rejectDocument } from './actions'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export const dynamic = 'force-dynamic'
 
@@ -67,14 +68,16 @@ export default async function AdminPage() {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {documents.map((doc: any) => (
+                        {documents.map((doc: { id: string; file_name: string; public_url: string | null; user_id: string; status: string }) => (
                             <div key={doc.id} className="group relative bg-white rounded-3xl border border-slate-100 overflow-hidden flex flex-col transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-primary/20">
                                 <div className="aspect-square w-full bg-slate-50 border-b border-slate-100 relative overflow-hidden flex items-center justify-center">
                                     {doc.public_url ? (
-                                        <img
+                                        <Image
                                             src={doc.public_url}
                                             alt={doc.file_name}
-                                            className="object-cover w-full h-full transform transition-transform duration-500 group-hover:scale-105"
+                                            fill
+                                            className="object-cover transform transition-transform duration-500 group-hover:scale-105"
+                                            unoptimized
                                         />
                                     ) : (
                                         <FileText className="w-12 h-12 text-slate-400/50 transition-transform group-hover:scale-105 duration-500" />

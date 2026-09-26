@@ -1,5 +1,4 @@
 import { createClient } from '@/utils/supabase/server'
-import { Camera, User } from 'lucide-react'
 import ProfileForm from './profile-form'
 
 export const dynamic = 'force-dynamic'
