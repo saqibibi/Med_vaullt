@@ -94,15 +94,15 @@ export default function HistoryClient({ documents }: HistoryClientProps) {
     return (
         <>
             {/* --- Document List --- */}
-            <div className="w-full max-w-sm flex flex-col gap-4 px-2">
+            <div className="w-full max-w-sm flex flex-col gap-4 px-2 select-none">
                 {(!docs || docs.length === 0) ? (
-                    <div className="bg-white rounded-2xl p-8 border border-slate-100 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.1)] flex flex-col items-center justify-center text-center">
-                        <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-                            <FileIcon className="w-8 h-8 text-slate-300" />
+                    <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm flex flex-col items-center justify-center text-center">
+                        <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 border border-slate-100/50">
+                            <FileIcon className="w-8 h-8 text-slate-400" />
                         </div>
-                        <h3 className="text-[#1e293b] font-bold text-lg mb-2">No Reports Yet</h3>
-                        <p className="text-slate-500 text-sm mb-6">You haven't uploaded any medical documents to your vault.</p>
-                        <Link href="/dashboard/upload" className="bg-[#2563eb] text-white px-6 py-2.5 rounded-xl font-semibold text-sm hover:bg-blue-700 transition-colors shadow-sm">
+                        <h3 className="text-slate-800 font-bold text-lg mb-2">No Reports Yet</h3>
+                        <p className="text-slate-400 text-sm font-semibold mb-6 max-w-[240px] leading-relaxed">You haven't uploaded any medical documents to your vault.</p>
+                        <Link href="/dashboard/upload" className="bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-sky-600 transition-colors shadow-sm shadow-primary/10">
                             Upload your first report
                         </Link>
                     </div>
@@ -115,48 +115,48 @@ export default function HistoryClient({ documents }: HistoryClientProps) {
                         return (
                             <div
                                 key={doc.id}
-                                className="bg-white rounded-2xl p-4 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.1)] border border-slate-100 flex flex-col gap-3 hover:border-blue-200 transition-colors group"
+                                className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 flex flex-col gap-3 hover:border-primary/20 transition-all duration-300 group"
                             >
                                 <div className="flex items-start gap-3">
-                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${imageFlag ? 'bg-green-50' : 'bg-red-50'}`}>
-                                        {imageFlag ? <ImageIcon className="w-6 h-6 text-green-500" /> : <FileText className="w-6 h-6 text-red-500" />}
+                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border ${imageFlag ? 'bg-emerald-50 border-emerald-100/55' : 'bg-red-50 border-red-100/55'}`}>
+                                        {imageFlag ? <ImageIcon className="w-6 h-6 text-emerald-600" /> : <FileText className="w-6 h-6 text-red-500" />}
                                     </div>
                                     <div className="flex flex-col flex-1 overflow-hidden pt-0.5">
-                                        <h3 className="font-bold text-[#1e293b] text-base truncate group-hover:text-[#2563eb] transition-colors">{doc.title || doc.file_name}</h3>
-                                        <p className="text-xs text-slate-500 font-medium truncate mt-0.5" title={doc.file_name}>{doc.file_name}</p>
+                                        <h3 className="font-bold text-slate-800 text-base truncate group-hover:text-primary transition-colors">{doc.title || doc.file_name}</h3>
+                                        <p className="text-xs text-slate-400 font-bold truncate mt-0.5" title={doc.file_name}>{doc.file_name}</p>
                                     </div>
                                 </div>
 
                                 {doc.summary && (
-                                    <div className="bg-slate-50 rounded-lg p-3 text-sm text-slate-600 font-medium border border-slate-100 mt-1">
+                                    <div className="bg-slate-50 rounded-xl p-3 text-xs text-slate-600 font-semibold border border-slate-100 mt-1 leading-relaxed">
                                         {doc.summary}
                                     </div>
                                 )}
 
                                 {/* Action Bar */}
-                                <div className="flex items-center justify-between border-t border-slate-50 pt-3 mt-1">
-                                    <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-400">
-                                        <Calendar className="w-3 h-3" />
+                                <div className="flex items-center justify-between border-t border-slate-100 pt-3 mt-1">
+                                    <div className="flex items-center gap-1 text-[11px] font-bold text-slate-400">
+                                        <Calendar className="w-3.5 h-3.5" />
                                         {displayDate}
                                     </div>
 
                                     <div className="flex items-center gap-2">
                                         <button
                                             onClick={() => setSelectedDoc(doc)}
-                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 text-xs font-bold hover:bg-blue-100 transition-colors"
+                                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-sky-50 hover:bg-sky-100 border border-sky-100/50 text-sky-700 text-xs font-bold transition-all cursor-pointer"
                                         >
                                             <Eye className="w-3.5 h-3.5" /> View
                                         </button>
                                         <button
                                             onClick={(e) => handleDownload(e, doc.public_url, doc.file_name)}
-                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50 transition-colors"
+                                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-100 transition-all cursor-pointer"
                                         >
                                             <Download className="w-3.5 h-3.5" /> Download
                                         </button>
                                         <button
                                             onClick={(e) => handleDelete(e, doc)}
                                             disabled={isDeleting === doc.id}
-                                            className="flex items-center justify-center w-8 h-8 rounded-lg border border-red-100 text-red-500 bg-red-50 hover:bg-red-100 transition-colors disabled:opacity-50"
+                                            className="flex items-center justify-center w-8.5 h-8.5 rounded-xl border border-red-100 text-red-500 bg-red-50 hover:bg-red-500 hover:text-white transition-all disabled:opacity-50 cursor-pointer shadow-sm"
                                             title="Delete Report"
                                         >
                                             <Trash2 className="w-4 h-4" />
@@ -171,24 +171,24 @@ export default function HistoryClient({ documents }: HistoryClientProps) {
 
             {/* --- Fullscreen Inline Viewing Modal --- */}
             {selectedDoc && (
-                <div className="fixed inset-0 z-50 flex flex-col bg-black/95 backdrop-blur-sm animate-in fade-in duration-200">
+                <div className="fixed inset-0 z-50 flex flex-col bg-slate-900/90 backdrop-blur-md animate-in fade-in duration-200">
 
                     {/* Modal Header */}
-                    <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-black/50">
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/70 backdrop-blur-md">
                         <div className="flex flex-col overflow-hidden mr-4">
-                            <h3 className="text-white font-bold text-sm truncate">{selectedDoc.title || selectedDoc.file_name}</h3>
-                            <p className="text-slate-400 text-xs truncate">{selectedDoc.file_name}</p>
+                            <h3 className="text-white font-extrabold text-sm truncate">{selectedDoc.title || selectedDoc.file_name}</h3>
+                            <p className="text-slate-400 text-xs truncate mt-0.5">{selectedDoc.file_name}</p>
                         </div>
                         <div className="flex items-center gap-3 shrink-0">
                             <button
                                 onClick={(e) => handleDownload(e, selectedDoc.public_url, selectedDoc.file_name)}
-                                className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+                                className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/10 text-white hover:bg-white/20 border border-white/5 transition-all cursor-pointer"
                             >
                                 <Download className="w-4 h-4" />
                             </button>
                             <button
                                 onClick={() => setSelectedDoc(null)}
-                                className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-red-500/80 transition-colors"
+                                className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/10 text-white hover:bg-red-500 hover:text-white border border-white/5 transition-all cursor-pointer"
                             >
                                 <X className="w-5 h-5" />
                             </button>
@@ -196,30 +196,30 @@ export default function HistoryClient({ documents }: HistoryClientProps) {
                     </div>
 
                     {/* Viewer Content Area */}
-                    <div className="flex-1 flex items-center justify-center p-2 sm:p-4 overflow-hidden relative">
+                    <div className="flex-1 flex items-center justify-center p-4 overflow-hidden relative">
                         {isImage(selectedDoc.file_name) ? (
                             <img
                                 src={selectedDoc.public_url}
                                 alt={selectedDoc.title || 'Document'}
-                                className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                                className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl border border-white/5 bg-slate-950/20"
                             />
                         ) : (
                             <iframe
                                 src={`${selectedDoc.public_url}#toolbar=0&navpanes=0`}
-                                className="w-full h-full bg-white rounded-lg shadow-2xl"
+                                className="w-full h-full bg-white rounded-2xl shadow-2xl border border-white/5"
                                 title={selectedDoc.title || 'PDF Document'}
                             />
                         )}
 
                         {/* Fallback button if iframe fails on mobile browsers for non-PDFs */}
                         {!isImage(selectedDoc.file_name) && !selectedDoc.file_name.toLowerCase().endsWith('.pdf') && (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 z-10 px-6 text-center">
+                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/95 z-10 px-6 text-center">
                                 <FileIcon className="w-16 h-16 text-slate-500 mb-4" />
-                                <h4 className="text-white font-bold mb-2">Detailed Viewer Unavailable</h4>
-                                <p className="text-slate-400 text-sm mb-6">This file type (e.g. Word Document) cannot be previewed cleanly inline.</p>
+                                <h4 className="text-white font-extrabold text-lg mb-2">Detailed Viewer Unavailable</h4>
+                                <p className="text-slate-400 text-sm mb-6 max-w-xs leading-relaxed font-semibold">This file type (e.g. Word Document) cannot be previewed cleanly inline.</p>
                                 <button
                                     onClick={(e) => handleDownload(e, selectedDoc.public_url, selectedDoc.file_name)}
-                                    className="px-6 py-3 bg-[#2563eb] text-white font-bold rounded-xl flex items-center gap-2 hover:bg-blue-700 transition"
+                                    className="px-6 py-3.5 bg-primary hover:bg-sky-600 text-white font-bold rounded-xl flex items-center gap-2 transition shadow-lg shadow-sky-600/10 cursor-pointer"
                                 >
                                     <Download className="w-5 h-5" /> Download to View
                                 </button>

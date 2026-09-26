@@ -1,8 +1,8 @@
 import { ReactNode } from 'react'
-import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
-import { Home, ClipboardList, User } from 'lucide-react'
+
+import { DashboardNav } from './DashboardNav'
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
     const supabase = await createClient()
@@ -12,34 +12,31 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         redirect('/login')
     }
 
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('user_id', user.id)
+        .single()
+
+    const name = profile?.full_name || user.email || 'M'
+    const initial = name.replace(/[^a-zA-Z]/g, '')[0]?.toUpperCase() || 'M'
+
     return (
-        // Replaced bg-background with explicit light colors to prevent dark mode override
-        <div className="min-h-screen flex flex-col bg-[#f4f6fa] pb-20 text-[#1e293b]">
+        <div className="min-h-screen flex flex-col bg-[#f4f8fd] text-slate-800 md:pl-64 selection:bg-blue-100">
+            {/* Ambient background glows */}
+            <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none -z-10 opacity-30">
+                <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-400/10 blur-[120px]" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-sky-500/10 blur-[120px]" />
+            </div>
 
             {/* Main Content Area */}
-            <main className="flex-1 w-full max-w-md mx-auto p-4 md:p-6 mb-safe">
+            <main className="flex-1 w-full max-w-7xl mx-auto p-4 md:p-8 mb-24 md:mb-8 overflow-y-auto">
                 {children}
             </main>
 
-            {/* Fixed Bottom Navigation exactly matching Mockup */}
-            <nav className="fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] rounded-t-3xl z-50 pb-safe">
-                <div className="max-w-md mx-auto flex justify-around items-center py-4 px-6">
-                    <Link href="/dashboard" className="flex flex-col items-center gap-1 text-[#1e293b]">
-                        <Home className="w-7 h-7 fill-[#1e293b]" />
-                        <span className="text-xs font-semibold">Home</span>
-                    </Link>
-
-                    <Link href="/dashboard/history" className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#1e293b] transition-colors">
-                        <ClipboardList className="w-7 h-7" />
-                        <span className="text-xs font-medium">History</span>
-                    </Link>
-
-                    <Link href="/dashboard/profile" className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#1e293b] transition-colors">
-                        <User className="w-7 h-7" />
-                        <span className="text-xs font-medium">Profile</span>
-                    </Link>
-                </div>
-            </nav>
+            {/* Navigation Menus */}
+            <DashboardNav userInitial={initial} />
         </div>
     )
 }
+

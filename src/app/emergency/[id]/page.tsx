@@ -1,13 +1,13 @@
 import { createClient } from '@/utils/supabase/server'
 import { notFound } from 'next/navigation'
-import { Phone, FileText, User as UserIcon, Droplets, AlertCircle, Activity, HeartPulse } from 'lucide-react'
+import { Phone, FileText, User as UserIcon, AlertCircle, HeartPulse, ShieldCheck, Activity } from 'lucide-react'
 import ReportsViewer from './ReportsViewer'
 
 export const dynamic = 'force-dynamic'
 
 export default async function EmergencyProfilePage({ params }: { params: { id: string } }) {
-    const resolvedParams = await params;
-    const { id } = resolvedParams;
+    const resolvedParams = await params
+    const { id } = resolvedParams
     const supabase = await createClient()
 
     // Fetch profile using the emergency_id (no auth required)
@@ -34,145 +34,174 @@ export default async function EmergencyProfilePage({ params }: { params: { id: s
         .order('created_at', { ascending: false })
 
     const calculateAge = (dob: string) => {
-        if (!dob) return null;
-        const diff = Date.now() - new Date(dob).getTime();
-        return Math.abs(new Date(diff).getUTCFullYear() - 1970);
+        if (!dob) return null
+        const diff = Date.now() - new Date(dob).getTime()
+        return Math.abs(new Date(diff).getUTCFullYear() - 1970)
     }
 
     const age = calculateAge(profile.dob)
     const conditions = profile.serious_conditions || []
     const contacts = profile.emergency_contacts || []
-    // The profiles schema has `full_name`, not first/last.
     const fullName = profile.full_name?.trim() || 'Unknown Patient'
 
     return (
-        <div className="min-h-screen bg-[#f8fafc] text-slate-800 pb-12 font-sans selection:bg-red-200">
-            {/* Top Red Bar for immediate medical context */}
-            <div className="bg-red-600 text-white text-center py-3 px-4 font-bold tracking-wide shadow-md flex items-center justify-center gap-2 relative z-10 text-sm">
-                <AlertCircle className="w-5 h-5 animate-pulse" />
-                EMERGENCY MEDICAL PROFILE
+        <div className="min-h-screen bg-[#f4fbf9] text-slate-800 pb-16 font-sans selection:bg-emerald-100 relative">
+            
+            {/* Ambient background glows & waves */}
+            <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none -z-10 opacity-40">
+                <div className="absolute top-0 left-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-400/10 blur-[120px]" />
+                <div className="absolute bottom-0 right-[-10%] w-[50%] h-[50%] rounded-full bg-teal-500/10 blur-[120px]" />
+                
+                {/* ECG waves drawing on left and right */}
+                <svg className="absolute left-6 top-1/4 w-32 h-64 text-emerald-600/5" viewBox="0 0 100 200" fill="none" stroke="currentColor" strokeWidth="2">
+                     <path d="M 0 50 H 30 L 40 10 L 50 90 L 60 40 L 70 60 H 100" />
+                     <path d="M 0 150 H 30 L 40 110 L 50 190 L 60 140 L 70 160 H 100" />
+                </svg>
+                <svg className="absolute right-6 bottom-1/4 w-32 h-64 text-emerald-600/5" viewBox="0 0 100 200" fill="none" stroke="currentColor" strokeWidth="2">
+                     <path d="M 0 100 H 30 L 40 60 L 50 140 L 60 90 L 70 110 H 100" />
+                </svg>
             </div>
 
-            <div className="max-w-lg mx-auto p-4 space-y-6 mt-4">
+            {/* Top dark-green header rail */}
+            <div className="bg-[#106b52] text-white text-center py-4.5 px-4 font-black tracking-widest shadow-md flex items-center justify-center gap-2 relative z-10 text-xs select-none uppercase">
+                <ShieldCheck className="w-5 h-5 fill-white text-[#106b52]" />
+                EMERGENCY PROFILE
+            </div>
 
-                {/* Card 1: Patient Profile */}
-                <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-red-50 rounded-bl-full -z-0"></div>
+            <div className="max-w-2xl mx-auto p-4 space-y-6 mt-6">
 
-                    <div className="flex items-start justify-between relative z-10 w-full">
-                        <div className="flex items-center gap-4">
-                            {/* Profile Photo */}
-                            <div className="w-20 h-20 rounded-full bg-slate-200 border-4 border-white shadow-md flex items-center justify-center overflow-hidden shrink-0">
+                {/* Card 1: Patient Profile Summary */}
+                <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 relative overflow-hidden flex items-center justify-between gap-6">
+                    <div className="flex items-center gap-5 relative z-10 min-w-0">
+                        {/* Concentric dotted avatar ring */}
+                        <div className="relative flex items-center justify-center shrink-0">
+                            <div className="absolute inset-[-6px] rounded-full border border-dashed border-emerald-500/20 animate-[spin_40s_linear_infinite]" />
+                            <div className="w-18 h-18 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
                                 {profile.avatar_url ? (
                                     <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
                                 ) : (
-                                    <UserIcon className="w-10 h-10 text-slate-400" />
+                                    <UserIcon className="w-7 h-7 text-emerald-600" />
                                 )}
-                            </div>
-
-                            <div className="flex flex-col">
-                                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-1">{fullName}</h1>
-                                <div className="flex flex-wrap gap-2 text-sm font-medium text-slate-500 mt-1">
-                                    {age !== null && <span className="bg-slate-100 px-2.5 py-1 rounded-md">{age} yrs</span>}
-                                    {profile.gender && <span className="bg-slate-100 px-2.5 py-1 rounded-md capitalize">{profile.gender}</span>}
-                                </div>
                             </div>
                         </div>
 
-                        {profile.blood_group && (
-                            <div className="flex flex-col items-center justify-center bg-red-100 text-red-600 rounded-xl w-16 h-16 shrink-0 shadow-sm border border-red-200">
-                                <Droplets className="w-6 h-6 mb-0.5 fill-red-500" />
-                                <span className="font-bold text-sm tracking-tighter">{profile.blood_group}</span>
+                        <div className="flex flex-col min-w-0">
+                            <h1 className="text-2xl font-black text-slate-900 tracking-tight mb-1.5 truncate">{fullName}</h1>
+                            <div className="flex flex-wrap gap-2 text-[10px] font-bold text-slate-500 mt-1">
+                                {age !== null && (
+                                    <span className="bg-emerald-50/50 text-[#106b52] border border-emerald-100/50 px-2.5 py-1 rounded-lg uppercase tracking-wider font-extrabold">
+                                        {age} Years Old
+                                    </span>
+                                )}
+                                {profile.gender && (
+                                    <span className="bg-slate-50 border border-slate-100 px-2.5 py-1 rounded-lg uppercase tracking-wider">
+                                        {profile.gender}
+                                    </span>
+                                )}
                             </div>
-                        )}
+                        </div>
+                    </div>
+
+                    {/* ECG heartbeat shape in a heart vector */}
+                    <div className="relative z-10 shrink-0 select-none">
+                        <svg className="w-20 h-20 text-emerald-500/10 shrink-0 pointer-events-none" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 35 C12 22, 25 15, 50 35 C75 15, 88 22, 88 35 C88 58, 50 85, 50 85 C50 85, 12 58, 12 35 Z" fill="currentColor" />
+                            <path d="M25 45 H45 L48 35 L52 55 L55 42 L58 48 H75" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
                     </div>
                 </div>
 
-                {/* Card 2: Serious Conditions (⚠️ Priority) */}
-                <div className="bg-white rounded-2xl shadow-sm border-2 border-red-500 overflow-hidden">
-                    <div className="bg-red-500 text-white px-5 py-3.5 flex items-center justify-between">
-                        <h2 className="font-bold text-lg flex items-center gap-2">
-                            <HeartPulse className="w-5 h-5" />
+                {/* Card 2: Serious Conditions (Critical Alerts) */}
+                <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
+                    <div className="bg-[#106b52] text-white px-6 py-4 flex items-center justify-between">
+                        <h2 className="font-black text-xs uppercase tracking-wider flex items-center gap-2">
+                            <HeartPulse className="w-4.5 h-4.5 animate-pulse text-white" />
                             Critical Alerts
                         </h2>
-                        <span className="bg-white/20 text-white text-xs px-2.5 py-1 rounded-full font-bold">
-                            {conditions.length}
+                        <span className="bg-white/20 text-white text-[10px] px-2.5 py-1 rounded-lg font-bold uppercase tracking-wider">
+                            {conditions.length} Active
                         </span>
                     </div>
 
-                    <div className="p-5">
+                    <div className="p-6">
                         {conditions.length > 0 ? (
-                            <ul className="space-y-3">
+                            <ul className="space-y-4">
                                 {conditions.map((condition: any, idx: number) => (
-                                    <li key={idx} className="flex items-start gap-4 p-3 bg-red-50/50 rounded-xl border border-red-100">
-                                        <div className={`p-2 rounded-full mt-0.5 shrink-0 ${condition.severity === 'Critical' ? 'bg-red-500 text-white' : condition.severity === 'High' ? 'bg-orange-500 text-white' : 'bg-yellow-400 text-white'}`}>
-                                            <AlertCircle className="w-5 h-5" />
-                                        </div>
-                                        <div className="flex flex-col w-full">
-                                            <div className="flex justify-between items-start">
-                                                <p className="font-bold text-slate-900 text-base leading-snug">{condition.name || condition.condition}</p>
-                                                <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${condition.severity === 'Critical' ? 'bg-red-100 text-red-700 border-red-200' : 'bg-orange-100 text-orange-700 border-orange-200'}`}>
-                                                    {condition.severity || condition.type || 'Alert'}
+                                    <li key={idx} className="flex items-start gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 relative overflow-hidden">
+                                        <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${condition.severity === 'Critical' ? 'bg-red-500' : condition.severity === 'High' ? 'bg-orange-500' : 'bg-amber-500'}`} />
+                                        
+                                        <div className="flex flex-col w-full pl-2">
+                                            <div className="flex justify-between items-start gap-2">
+                                                <p className="font-bold text-slate-800 text-sm leading-snug truncate">{condition.name || condition.condition}</p>
+                                                <span className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-md border shrink-0 ${condition.severity === 'Critical' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-orange-50 text-orange-700 border-orange-200'}`}>
+                                                    {condition.severity || 'Alert'}
                                                 </span>
                                             </div>
                                             {condition.actionPlan && (
-                                                <p className="text-sm text-slate-600 font-medium mt-1.5 bg-white p-2.5 rounded-lg border border-red-100">
-                                                    <span className="font-bold text-red-600 block text-xs mb-0.5">ACTION PLAN:</span>
-                                                    {condition.actionPlan}
-                                                </p>
+                                                <div className="mt-2.5 border-t border-slate-200/50 pt-2.5">
+                                                    <p className="text-[9px] font-bold text-emerald-800 uppercase tracking-widest mb-1.5">Emergency Action Plan</p>
+                                                    <p className="text-xs text-slate-600 bg-white p-3 rounded-xl border border-slate-200/40 leading-relaxed font-semibold">
+                                                        {condition.actionPlan}
+                                                    </p>
+                                                </div>
                                             )}
                                         </div>
                                     </li>
                                 ))}
                             </ul>
                         ) : (
-                            <p className="text-slate-500 font-medium text-center py-2">No serious conditions listed.</p>
+                            <div className="flex flex-col items-center justify-center p-6 text-center">
+                                <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100/60 flex items-center justify-center text-emerald-600 mb-3 shadow-inner">
+                                    <FileText className="w-5.5 h-5.5 text-emerald-600" />
+                                </div>
+                                <p className="text-slate-400 font-bold text-sm">No serious conditions listed.</p>
+                            </div>
                         )}
                     </div>
                 </div>
 
                 {/* Card 3: Emergency Contacts */}
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div className="bg-slate-50 px-5 py-4 border-b border-slate-100">
-                        <h2 className="font-bold text-lg flex items-center gap-2 text-slate-800">
-                            <Phone className="w-5 h-5 text-blue-500" />
+                <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
+                    <div className="bg-slate-50 px-6 py-4.5 border-b border-slate-100">
+                        <h2 className="font-black text-xs uppercase tracking-wider text-slate-800 flex items-center gap-2">
+                            <Phone className="w-4.5 h-4.5 text-[#106b52]" />
                             Emergency Contacts
                         </h2>
                     </div>
 
-                    <div className="p-5">
+                    <div className="p-6">
                         {contacts.length > 0 ? (
                             <div className="space-y-4">
                                 {contacts.map((contact: any, idx: number) => (
                                     <div key={idx} className="flex items-center justify-between border-b border-slate-50 last:border-0 pb-4 last:pb-0">
-                                        <div>
-                                            <p className="font-bold text-slate-800">{contact.name}</p>
-                                            <p className="text-sm text-slate-500 font-medium">{contact.relation}</p>
+                                        <div className="min-w-0 mr-4">
+                                            <p className="font-bold text-slate-800 truncate">{contact.name}</p>
+                                            <p className="text-[10px] text-emerald-700 font-bold uppercase tracking-wider mt-1">{contact.relation}</p>
                                         </div>
                                         <a
                                             href={`tel:${contact.phone}`}
-                                            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold transition-transform active:scale-95 shadow-md shadow-blue-500/20 flex items-center gap-2 text-sm"
+                                            className="bg-[#106b52] hover:bg-[#0c533f] text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-md shadow-emerald-700/10 flex items-center gap-1.5 text-xs shrink-0 cursor-pointer"
                                         >
-                                            <Phone className="w-4 h-4" />
+                                            <Phone className="w-3.5 h-3.5" />
                                             Call
                                         </a>
                                     </div>
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-slate-500 font-medium text-center py-2">No emergency contacts listed.</p>
+                            <p className="text-slate-400 font-bold text-center py-4 text-sm">No emergency contacts listed.</p>
                         )}
                     </div>
                 </div>
 
-                {/* Card 4: View-Only Reports */}
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div className="bg-slate-50 px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-                        <h2 className="font-bold text-lg flex items-center gap-2 text-slate-800">
-                            <FileText className="w-5 h-5 text-indigo-500" />
-                            Medical Reports
+                {/* Card 4: Clinical Documentation */}
+                <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
+                    <div className="bg-slate-50 px-6 py-4.5 border-b border-slate-100 flex items-center justify-between">
+                        <h2 className="font-black text-xs uppercase tracking-wider text-slate-800 flex items-center gap-2">
+                            <FileText className="w-4.5 h-4.5 text-[#106b52]" />
+                            Clinical Documentation
                         </h2>
-                        <span className="bg-indigo-100 text-indigo-700 text-xs px-2.5 py-1 rounded-full font-bold">
+                        <span className="bg-emerald-50 text-[#106b52] text-[10px] px-2.5 py-1 rounded-lg font-extrabold uppercase tracking-wider border border-emerald-100/60">
                             View Only
                         </span>
                     </div>
@@ -182,10 +211,17 @@ export default async function EmergencyProfilePage({ params }: { params: { id: s
                     </div>
                 </div>
 
-                <div className="text-center mt-8 text-xs text-slate-400 font-medium flex flex-col items-center gap-1">
-                    <p>Information provided by MedVault user.</p>
-                    <p>Generated for emergency medical access.</p>
+                {/* Verification Badge Footer */}
+                <div className="text-center mt-12 flex flex-col items-center gap-2 z-10 relative select-none">
+                    <div className="flex items-center gap-2 justify-center w-full max-w-sm mb-1">
+                        <div className="h-[1px] bg-emerald-100/80 flex-1" />
+                        <ShieldCheck className="w-5 h-5 text-emerald-600" />
+                        <div className="h-[1px] bg-emerald-100/80 flex-1" />
+                    </div>
+                    <p className="text-[10px] text-emerald-800 font-black uppercase tracking-[0.15em]">Verified Clinical Record Vault</p>
+                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Generated securely for emergency access</p>
                 </div>
+
             </div>
         </div>
     )

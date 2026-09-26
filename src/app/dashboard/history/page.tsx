@@ -19,16 +19,16 @@ export default async function HistoryPage() {
         .order('created_at', { ascending: false })
 
     return (
-        <div className="w-full flex flex-col items-center pb-8">
+        <div className="w-full flex flex-col items-center pb-8 select-none">
 
             {/* Header Section */}
             <div className="w-full max-w-sm mt-6 mb-6 relative px-2">
-                <Link href="/dashboard" className="absolute -left-2 top-0.5 p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-500">
+                <Link href="/dashboard" className="absolute -left-2 top-0.5 p-2 rounded-xl hover:bg-slate-100 transition-all text-slate-500">
                     <ChevronLeft className="w-6 h-6" />
                 </Link>
                 <div className="text-center">
-                    <h1 className="text-2xl font-bold text-[#1e293b] mb-1">My Reports</h1>
-                    <p className="text-[#4f5b72] text-sm font-medium">All uploaded documents</p>
+                    <h1 className="text-2xl font-extrabold text-slate-900 mb-1">My Reports</h1>
+                    <p className="text-slate-500 text-sm font-semibold">Your encrypted clinical records</p>
                 </div>
             </div>
 

@@ -1,7 +1,6 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 
 export async function login(formData: FormData) {
@@ -15,7 +14,7 @@ export async function login(formData: FormData) {
     const { error, data: authData } = await supabase.auth.signInWithPassword(data)
 
     if (error) {
-        redirect(`/login?message=${encodeURIComponent(error.message)}`)
+        return { error: error.message }
     }
 
     if (authData.user) {
@@ -29,10 +28,10 @@ export async function login(formData: FormData) {
 
         // Redirect to profile creation if they haven't set up a name yet
         if (!profile?.full_name || profile.full_name.trim() === '') {
-            redirect('/dashboard/profile')
+            return { success: true, redirectUrl: '/dashboard/profile' }
         }
     }
 
     revalidatePath('/', 'layout')
-    redirect('/dashboard')
+    return { success: true, redirectUrl: '/dashboard' }
 }

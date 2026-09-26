@@ -1,20 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f4f6fa;
-  --foreground: #1e293b;
-  --card: #ffffff;
-  --card-foreground: #1e293b;
-  --border: #e2e8f0;
-  --primary: #2563eb;
+  --background: #f8fafc; /* Slate 50 - clean, clinical background */
+  --foreground: #0f172a; /* Slate 900 - readable dark text */
+  --card: #ffffff; /* Pure white cards */
+  --card-foreground: #0f172a;
+  --border: rgba(148, 163, 184, 0.15); /* Slate 200 equivalent border */
+  --primary: #0284c7; /* Sky 600 - Medical Blue */
   --primary-foreground: #ffffff;
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
+  --muted: #f1f5f9; /* Slate 100 */
+  --muted-foreground: #64748b; /* Slate 500 */
 
-  --success: #22c55e;
-  --warning: #fef3c7;
-  --warning-foreground: #b45309;
-  --danger: #ef4444;
+  --success: #10b981; /* Healthcare Green */
+  --warning: #f59e0b; /* Safety Amber */
+  --danger: #ef4444; /* Alert Red */
 }
 
 @theme inline {
@@ -28,42 +27,35 @@
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
 
-  /* Adding custom semantic colors to tailwind */
   --color-success: var(--success);
   --color-warning: var(--warning);
-  --color-warning-foreground: var(--warning-foreground);
   --color-danger: var(--danger);
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-
-  /* For this redesign, we'll keep the light-themed "Emergency Dashboard" look even in dark mode initially to match the mockup */
-  :root {
-    --background: #f4f6fa;
-    --foreground: #1e293b;
-    --card: #ffffff;
-    --card-foreground: #1e293b;
-    --border: #e2e8f0;
-    --primary: #2563eb;
-    --primary-foreground: #ffffff;
-    --muted: #f1f5f9;
-    --muted-foreground: #64748b;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }
 
 @layer utilities {
   .glass {
-    background: #ffffff;
-    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    box-shadow: 0 8px 32px 0 rgba(148, 163, 184, 0.06);
+  }
+
+  .premium-blur {
+    position: absolute;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0.06;
   }
 }

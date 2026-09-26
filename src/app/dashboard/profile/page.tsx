@@ -21,19 +21,15 @@ export default async function ProfilePage() {
     const displayFirstName = defaultName.charAt(0).toUpperCase() + defaultName.slice(1)
 
     return (
-        <div className="w-full flex flex-col items-center pb-8">
-
-            {/* Header */}
-            <div className="text-center mt-6 mb-8 w-full relative">
-                <h1 className="text-2xl font-bold text-[#1e293b]">My Profile</h1>
-            </div>
-
-            <div className="w-full max-w-sm flex flex-col gap-6">
-
-                {/* Profile Form (Dynamic Client Component) */}
-                <ProfileForm profile={profile} displayFirstName={displayFirstName} email={user.email || ''} />
-
-            </div>
+        <div className="w-full max-w-3xl mx-auto pb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 select-none">
+            {/* Profile Form (Dynamic Client Component) */}
+            <ProfileForm 
+                profile={profile} 
+                displayFirstName={displayFirstName} 
+                email={user.email || ''} 
+                memberSince={user.created_at} 
+            />
         </div>
     )
 }
+
