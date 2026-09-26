@@ -101,6 +101,7 @@ export function DashboardNav({ userInitial = 'M' }: DashboardNavProps) {
                 <div className="flex items-center justify-between border-t border-slate-100 pt-4">
                     <Link 
                         href="/auth/signout" 
+                        prefetch={false}
                         className="flex items-center gap-2 text-xs text-slate-400 font-bold hover:text-red-500 transition-colors uppercase tracking-widest"
                     >
                         <LogOut className="w-4 h-4" />
