@@ -34,6 +34,21 @@ export default async function EmergencyProfilePage({ params }: { params: { id: s
         .eq('user_id', profile.user_id)
         .order('created_at', { ascending: false })
 
+    // Generate signed URLs if storage bucket is private, falling back to public_url
+    const safeReports = await Promise.all(
+        (reports || []).map(async (rep) => {
+            if (rep.storage_path) {
+                const { data } = await supabase.storage
+                    .from('vault_assets')
+                    .createSignedUrl(rep.storage_path, 900) // 15 minutes for emergency viewer
+                if (data?.signedUrl) {
+                    return { ...rep, public_url: data.signedUrl }
+                }
+            }
+            return rep
+        })
+    )
+
     const now = new Date()
     const calculateAge = (dob: string) => {
         if (!dob) return null
@@ -209,7 +224,7 @@ export default async function EmergencyProfilePage({ params }: { params: { id: s
                     </div>
 
                     <div className="p-0">
-                        <ReportsViewer reports={reports || []} />
+                        <ReportsViewer reports={safeReports || []} />
                     </div>
                 </div>
 

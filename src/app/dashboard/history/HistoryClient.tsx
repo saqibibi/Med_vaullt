@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { FileText, Calendar, Image as ImageIcon, File as FileIcon, X, Download, Eye, Trash2 } from 'lucide-react'
+import { FileText, Calendar, Image as ImageIcon, File as FileIcon, X, Download, Eye, Trash2, RefreshCw, AlertCircle, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -15,6 +15,8 @@ interface DocumentItem {
     public_url: string
     storage_path: string // Added to locate file in storage for deletion
     created_at: string
+    processing_status?: string | null
+    processing_error?: string | null
 }
 
 interface HistoryClientProps {
@@ -25,6 +27,8 @@ export default function HistoryClient({ documents }: HistoryClientProps) {
     const [docs, setDocs] = useState<DocumentItem[]>(documents)
     const [selectedDoc, setSelectedDoc] = useState<DocumentItem | null>(null)
     const [isDeleting, setIsDeleting] = useState<string | null>(null)
+    const [isOpening, setIsOpening] = useState<string | null>(null)
+    const [isRetrying, setIsRetrying] = useState<string | null>(null)
     const router = useRouter()
 
     // Helper to determine if the URL is an image
@@ -32,24 +36,70 @@ export default function HistoryClient({ documents }: HistoryClientProps) {
         return !!fileName.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp)$/i)
     }
 
+    // Secure view helper fetching short-lived signed URL
+    const handleView = async (doc: DocumentItem) => {
+        setIsOpening(doc.id)
+        try {
+            const res = await fetch(`/api/reports/${doc.id}/open?json=true`)
+            const data = await res.json()
+            if (res.ok && data.url) {
+                setSelectedDoc({ ...doc, public_url: data.url })
+                return
+            }
+        } catch (err) {
+            console.warn('Signed view fallback:', err)
+        } finally {
+            setIsOpening(null)
+        }
+        setSelectedDoc(doc)
+    }
+
     // Attempt to force a download instead of navigating
-    const handleDownload = async (e: React.MouseEvent, url: string, fileName: string) => {
+    const handleDownload = async (e: React.MouseEvent, doc: DocumentItem) => {
         // Prevent event propagation so we don't accidentally open the modal if clicking the outer area
         e.stopPropagation()
         try {
-            const response = await fetch(url)
+            const res = await fetch(`/api/reports/${doc.id}/open?json=true`)
+            const data = await res.json()
+            const targetUrl = (res.ok && data.url) ? data.url : doc.public_url
+
+            const response = await fetch(targetUrl)
             const blob = await response.blob()
             const blobUrl = window.URL.createObjectURL(blob)
             const a = document.createElement('a')
             a.href = blobUrl
-            a.download = fileName
+            a.download = doc.file_name
             document.body.appendChild(a)
             a.click()
             a.remove()
             window.URL.revokeObjectURL(blobUrl)
         } catch (error) {
             console.error("Download failed, falling back to new tab opening.", error)
-            window.open(url, '_blank')
+            window.open(`/api/reports/${doc.id}/open`, '_blank')
+        }
+    }
+
+    // Retry document indexing
+    const handleRetryIndex = async (e: React.MouseEvent, docId: string) => {
+        e.stopPropagation()
+        setIsRetrying(docId)
+        try {
+            const res = await fetch('/api/documents/process', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ documentId: docId })
+            })
+            if (!res.ok) {
+                const errData = await res.json()
+                throw new Error(errData.error || 'Failed to re-index')
+            }
+            setDocs(prev => prev.map(d => d.id === docId ? { ...d, processing_status: 'completed', processing_error: null } : d))
+            router.refresh()
+        } catch (err) {
+            console.error('Failed to retry index:', err)
+            alert('Could not index report: ' + (err instanceof Error ? err.message : ''))
+        } finally {
+            setIsRetrying(null)
         }
     }
 
@@ -136,21 +186,40 @@ export default function HistoryClient({ documents }: HistoryClientProps) {
                                 )}
 
                                 {/* Action Bar */}
-                                <div className="flex items-center justify-between border-t border-slate-100 pt-3 mt-1">
-                                    <div className="flex items-center gap-1 text-[11px] font-bold text-slate-400">
-                                        <Calendar className="w-3.5 h-3.5" />
-                                        {displayDate}
+                                <div className="flex items-center justify-between border-t border-slate-100 pt-3 mt-1 flex-wrap gap-2">
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-1 text-[11px] font-bold text-slate-400">
+                                            <Calendar className="w-3.5 h-3.5" />
+                                            {displayDate}
+                                        </div>
+                                        {doc.processing_status === 'failed' && (
+                                            <button
+                                                onClick={(e) => handleRetryIndex(e, doc.id)}
+                                                disabled={isRetrying === doc.id}
+                                                className="flex items-center gap-1 text-[10px] font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-2 py-0.5 rounded-lg transition cursor-pointer"
+                                                title="Retry indexing document"
+                                            >
+                                                <RefreshCw className={`w-3 h-3 ${isRetrying === doc.id ? 'animate-spin' : ''}`} />
+                                                <span>Retry Index</span>
+                                            </button>
+                                        )}
                                     </div>
 
                                     <div className="flex items-center gap-2">
                                         <button
-                                            onClick={() => setSelectedDoc(doc)}
+                                            onClick={() => handleView(doc)}
+                                            disabled={isOpening === doc.id}
                                             className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-sky-50 hover:bg-sky-100 border border-sky-100/50 text-sky-700 text-xs font-bold transition-all cursor-pointer"
                                         >
-                                            <Eye className="w-3.5 h-3.5" /> View
+                                            {isOpening === doc.id ? (
+                                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                            ) : (
+                                                <Eye className="w-3.5 h-3.5" />
+                                            )}
+                                            View
                                         </button>
                                         <button
-                                            onClick={(e) => handleDownload(e, doc.public_url, doc.file_name)}
+                                            onClick={(e) => handleDownload(e, doc)}
                                             className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-100 transition-all cursor-pointer"
                                         >
                                             <Download className="w-3.5 h-3.5" /> Download
@@ -183,7 +252,7 @@ export default function HistoryClient({ documents }: HistoryClientProps) {
                         </div>
                         <div className="flex items-center gap-3 shrink-0">
                             <button
-                                onClick={(e) => handleDownload(e, selectedDoc.public_url, selectedDoc.file_name)}
+                                onClick={(e) => handleDownload(e, selectedDoc)}
                                 className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/10 text-white hover:bg-white/20 border border-white/5 transition-all cursor-pointer"
                             >
                                 <Download className="w-4 h-4" />
@@ -222,7 +291,7 @@ export default function HistoryClient({ documents }: HistoryClientProps) {
                                 <h4 className="text-white font-extrabold text-lg mb-2">Detailed Viewer Unavailable</h4>
                                 <p className="text-slate-400 text-sm mb-6 max-w-xs leading-relaxed font-semibold">This file type (e.g. Word Document) cannot be previewed cleanly inline.</p>
                                 <button
-                                    onClick={(e) => handleDownload(e, selectedDoc.public_url, selectedDoc.file_name)}
+                                    onClick={(e) => handleDownload(e, selectedDoc)}
                                     className="px-6 py-3.5 bg-primary hover:bg-sky-600 text-white font-bold rounded-xl flex items-center gap-2 transition shadow-lg shadow-sky-600/10 cursor-pointer"
                                 >
                                     <Download className="w-5 h-5" /> Download to View

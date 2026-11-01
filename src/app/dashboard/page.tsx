@@ -1,5 +1,5 @@
 import { createClient } from '@/utils/supabase/server'
-import { ChevronRight, Folder, HeartPulse, UploadCloud, User, Droplet, Phone, ShieldCheck } from 'lucide-react'
+import { ChevronRight, Folder, HeartPulse, UploadCloud, User, Droplet, Phone, ShieldCheck, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import QrCodeModal from './QrCodeModal'
 import Image from 'next/image'
@@ -49,6 +49,30 @@ export default async function DashboardPage() {
                     <path d="M50,55 L70,55 L80,70 L70,85 L50,85 L40,70 Z" />
                 </svg>
             </div>
+
+            {/* Quick Search Assistant Banner */}
+            <Link
+                href="/dashboard/assistant"
+                className="w-full bg-white rounded-3xl p-4 md:p-5 border border-slate-100/90 shadow-sm hover:border-blue-300 transition-all flex items-center justify-between mb-6 group cursor-pointer"
+            >
+                <div className="flex items-center gap-3.5">
+                    <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 group-hover:scale-105 transition-transform">
+                        <Sparkles className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="font-extrabold text-slate-800 text-sm group-hover:text-blue-600 transition-colors">
+                            AI Medical Report Search
+                        </span>
+                        <span className="text-xs text-slate-400 font-semibold">
+                            Find hemoglobin, BP, blood tests, or search by medical keyword
+                        </span>
+                    </div>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs font-bold text-blue-600 bg-blue-50/80 px-3.5 py-2 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-all">
+                    <span>Search Records</span>
+                    <ChevronRight className="w-4 h-4" />
+                </div>
+            </Link>
 
             {/* Responsive Dashboard Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">

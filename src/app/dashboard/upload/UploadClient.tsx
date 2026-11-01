@@ -78,7 +78,7 @@ export default function UploadClient() {
                 .getPublicUrl(storagePath)
 
             // 2. Save metadata to vault_documents table
-            const { error: dbError } = await supabase
+            const { data: insertedDoc, error: dbError } = await supabase
                 .from('vault_documents')
                 .insert({
                     user_id: user.id,
@@ -87,13 +87,27 @@ export default function UploadClient() {
                     file_name: file.name,
                     title: title.trim(),
                     summary: summary.trim(),
-                    status: 'pending'
+                    status: 'pending',
+                    processing_status: 'pending'
                 })
+                .select('id')
+                .single()
 
             if (dbError) {
                 // If DB insert fails, clean up the orphaned file in storage
                 await supabase.storage.from('vault_assets').remove([storagePath])
                 throw dbError
+            }
+
+            // 3. Trigger asynchronous document processing and search indexing
+            if (insertedDoc?.id) {
+                fetch('/api/documents/process', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ documentId: insertedDoc.id })
+                }).catch(err => {
+                    console.warn('Background indexing trigger notice:', err)
+                })
             }
 
             setSuccess(true)
@@ -103,11 +117,20 @@ export default function UploadClient() {
             }, 2000)
 
         } catch (err: unknown) {
-            const error = err instanceof Error ? err : new Error(String(err))
-            console.error(error)
-            setError(error.message || "Failed to upload file")
+            console.error("MedVault upload failed:", err);
+
+            const details =
+                typeof err === "object" && err !== null
+                    ? JSON.stringify(err)
+                    : String(err);
+
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : details || "Failed to upload file"
+            );
         } finally {
-            setIsUploading(false)
+            setIsUploading(false);
         }
     }
 
