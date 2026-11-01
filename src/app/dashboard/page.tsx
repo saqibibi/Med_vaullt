@@ -1,5 +1,5 @@
 import { createClient } from '@/utils/supabase/server'
-import { ChevronRight, Folder, HeartPulse, UploadCloud, User, Droplet, Phone, ShieldCheck, Sparkles } from 'lucide-react'
+import { ChevronRight, Folder, HeartPulse, UploadCloud, User, Droplet, Phone, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
 import QrCodeModal from './QrCodeModal'
 import Image from 'next/image'
@@ -51,7 +51,7 @@ export default async function DashboardPage() {
             </div>
 
             {/* Quick Search Assistant Banner */}
-            <Link
+            {/* <Link
                 href="/dashboard/assistant"
                 className="w-full bg-white rounded-3xl p-4 md:p-5 border border-slate-100/90 shadow-sm hover:border-blue-300 transition-all flex items-center justify-between mb-6 group cursor-pointer"
             >
@@ -72,7 +72,7 @@ export default async function DashboardPage() {
                     <span>Search Records</span>
                     <ChevronRight className="w-4 h-4" />
                 </div>
-            </Link>
+            </Link> */}
 
             {/* Responsive Dashboard Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
